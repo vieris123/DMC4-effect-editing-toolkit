@@ -3,8 +3,8 @@
 //
 //      File: EFL 
 //   Authors: Vieris
-//   Version: 1
-//   Purpose: Parse EFL files
+//   Version: 1.1
+//   Purpose: Parses EFL files
 //  Category: 
 // File Mask: 
 //  ID Bytes: 
@@ -31,9 +31,9 @@ typedef struct{
 
 typedef struct{
     short fadein1 <name = "Fade-in #1">;
-    short fadein2 <name = "Fade-in #1">;
+    short fadein2 <name = "Fade-in #2">;
     short transition1 <name = "Transition #1">;
-    short transition2 <name = "Transition #1">;
+    short transition2 <name = "Transition #2">;
     short fadeout1 <name = "Fade-out #1">;
     short fadeout2 <name = "Fade-out #2">;
     char persistent <name = "Keep permanent">;
@@ -96,6 +96,31 @@ typedef struct {
             } scaleFactors;
         } efxplacement <name = "Effect Placement">;
 
+void AttrFormatParse(ubyte format)
+{
+    switch (format){
+        case 0x00:
+            break;
+        case 0x01:
+            break;
+        case 0x02:
+            break;
+        case 0x04:
+            break;
+        case 0x05:
+            struct {
+                char modRef[29];
+            } Efx3D <name = "3D effect">;
+            break;
+        case 0x06:
+            break;
+        case 0x07:
+            break;
+        default:
+            break;
+    }
+}
+
 typedef struct (ubyte format){
     char toggle <name = "Toggle effect">;
     char ukn[2] <hidden = true>;
@@ -115,7 +140,7 @@ typedef struct (ubyte format){
     float expandRate <name = "Spread/Expand rate">;
     float triggerInc <name = "Size increment (?)">;
     FSkip(24);
-    colorcode ColorCode;
+    colorcode ColorCodePrimary;
     ubyte ukn3 <name = "Seems important (?)">;
     ubyte orientation <name = "Texture orientation">;
     ubyte startTex <name = "Starting texture">;
@@ -129,6 +154,22 @@ typedef struct (ubyte format){
     char eanRef[23];
     //AttrFormatParse(format);
     } efxattr <name = "Effect Attributes">;
+    
+typedef struct (ubyte format)
+{
+    ubyte toggle <name = "Extra attribute toggle", comment = "04 - default, 00 - extra attributes">;
+    FSkip(4);
+    ubyte orientation <name = "Orientation of behavior (?)", format = hex>;
+    switch (format){
+        case 0x0:
+            break;
+        case 0x0:
+            break;
+        default:
+            break;
+    };
+} efxbhvr <name = "Effect Behavior">;
+
 int getOffset(struct seginfo &input)
 {
     local int intOffset = input.section;
@@ -144,6 +185,7 @@ void EFLTemplate(){
         uint32 EfxCount <name = "Effect Count">;
         uint32 buffer[4];
     } Header <name = "EFL Header">;
+    
     if (0 < Header.EfxCount)
     {
         local int i;
@@ -154,15 +196,21 @@ void EFLTemplate(){
                 seginfo MetaAttribute <hidden=true>;
                 seginfo MetaAnimDur <hidden=true>;
                 seginfo MetaBehavior <hidden=true>;
+                
                 local int currPos = FTell();
+                
                 FSeek (getOffset(MetaPlacement));
                 efxplacement EfxPlacement;
+                
                 FSeek (getOffset(MetaAttribute));
                 efxattr EfxPlacement(MetaAttribute.format);
+                
                 FSeek(getOffset(MetaAnimDur));
                 efxanim EfxAnim;
-                //FSeek(getOffset(MetaBehavior));
-                //efxanim;
+                
+                FSeek(getOffset(MetaBehavior));
+                efxbhvr EfxBehavior(MetaBehavior.format);
+                
                 FSeek(currPos);
             } Effect  <name = "Effect">;
         }
