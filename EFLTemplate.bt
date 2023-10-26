@@ -1,0 +1,172 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: EFL 
+//   Authors: Vieris
+//   Version: 1
+//   Purpose: Parse EFL files
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+typedef struct{
+    ubyte format <name="Format">;
+    ubyte offset <name="Offset">;
+    ubyte section <name="Section">;
+    ubyte dummy <hidden=true>;
+    } seginfo <name = "Segment Info">;
+
+typedef struct{
+    ubyte   colorBlue <name="Blue", bgcolor=0xFF0000>;
+	ubyte   colorGreen <name="Green", bgcolor=0x00FF00>;
+    ubyte   colorRed <name="Red", bgcolor=0x0000FF>;
+	ubyte   colorAlpha <name="Alpha", bgcolor=0x9BFFFF>;
+    ubyte   colorBlue <name="Blue", bgcolor=0xFF0000>;
+	ubyte   colorGreen <name="Green", bgcolor=0x00FF00>;
+    ubyte   colorRed <name="Red", bgcolor=0x0000FF>;
+	ubyte   colorAlpha <name="Alpha", bgcolor=0x9BFFFF>;
+    } colorcode <name="Color Code">;
+
+typedef struct{
+    short fadein1 <name = "Fade-in #1">;
+    short fadein2 <name = "Fade-in #1">;
+    short transition1 <name = "Transition #1">;
+    short transition2 <name = "Transition #1">;
+    short fadeout1 <name = "Fade-out #1">;
+    short fadeout2 <name = "Fade-out #2">;
+    char persistent <name = "Keep permanent">;
+    } efxanim <name = "Animation duration">;
+
+typedef struct {
+        char states[4] <name = "Triggering state">;
+        char ukn[4];
+        short instances <name = "Number of instances">;
+        short ukn1;
+        uint32 ukn2;
+        char seeds[4];
+        FSkip(28);
+        float coords[3] <name = "X/Y/Z-offsets">;
+        char anchor <name = "Starting position code">;
+        FSkip(3);
+        float rotation[3] <name = "">;
+        float scale;
+        FSkip(36);
+        short delay;
+        FSkip(2);
+        struct{
+            float xSpreadScale;
+            FSkip(4);
+            float ySpreadScale;
+            FSkip(4);
+            float zSpreadScale;
+            } spreadCoords;
+        FSkip(4);
+        struct{
+            float xConst;
+            float miniXconst;
+            float yConst;
+            float miniYconst;
+            float zConst;
+            float miniZconst;
+            } spreadConsts;
+        short instances;
+        FSkip(2);
+        short triggers;
+        FSkip(2);
+        ubyte repeatToggle;
+        FSkip(3);
+        short TrigDelay1;
+        short TrigDelay2;
+        FSkip(8);
+        float size;
+        FSkip(4);
+        ubyte SpreadMode1;
+        ubyte SpreadMode2;
+        FSkip(16*4 + 6);
+        struct{
+            float scaleukn;
+            FSkip(4);
+            float scaleX;
+            FSkip(4);
+            float scaleY;
+            FSkip(4);
+            float scaleZ;
+            } scaleFactors;
+        } efxplacement <name = "Effect Placement">;
+
+typedef struct (ubyte format){
+    char toggle <name = "Toggle effect">;
+    char ukn[2] <hidden = true>;
+    ubyte displaymode <name = "Display mode", format = hex>;
+    ubyte reflectiveness <name = "Reflectiveness (?)", format = hex>;
+    ubyte ukn1[3] <name = "Seems important">;
+    FSkip(4);
+    ubyte fgbg[4] <name = "FG/BG placement (?)">;
+    FSkip(2);
+    ubyte thickness <name = "Effect thickness (?)", format = hex>;
+    ubyte colormode <name = "Color mode (RGB/CYMK)", format = hex>;
+    float ukn2;
+    float intensity <name = "Intensity/Luminosity">;
+    float sat <name = "Saturation(?)">;
+    float size <name = "Size">;
+    float sizeIncrement <name = "Size increment (?)">;
+    float expandRate <name = "Spread/Expand rate">;
+    float triggerInc <name = "Size increment (?)">;
+    FSkip(24);
+    colorcode ColorCode;
+    ubyte ukn3 <name = "Seems important (?)">;
+    ubyte orientation <name = "Texture orientation">;
+    ubyte startTex <name = "Starting texture">;
+    ubyte endTex <name = "End texture (for randomization)">;
+    ubyte anim[4] <name = "Animated tex thingies(?)">;
+    float shrinkRate <name = "Shrink rate during fade-out">;
+    float shrinkAdj <name = "Smth to do with shrink (?)">;
+    FSkip(16);
+    char texRef[26];
+    FSkip(166);
+    char eanRef[23];
+    //AttrFormatParse(format);
+    } efxattr <name = "Effect Attributes">;
+int getOffset(struct seginfo &input)
+{
+    local int intOffset = input.section;
+    intOffset <<= 8;
+    intOffset += input.offset + 0x20;
+    return intOffset;
+}
+
+void EFLTemplate(){
+    struct{
+        char magic[8] <name="File Magic", open=suppress>;
+        uint32 FileLength <name = "File Length">;
+        uint32 EfxCount <name = "Effect Count">;
+        uint32 buffer[4];
+    } Header <name = "EFL Header">;
+    if (0 < Header.EfxCount)
+    {
+        local int i;
+        for (i = 0; i < Header.EfxCount; i++)
+        {
+            struct {
+                seginfo MetaPlacement <hidden=true>;
+                seginfo MetaAttribute <hidden=true>;
+                seginfo MetaAnimDur <hidden=true>;
+                seginfo MetaBehavior <hidden=true>;
+                local int currPos = FTell();
+                FSeek (getOffset(MetaPlacement));
+                efxplacement EfxPlacement;
+                FSeek (getOffset(MetaAttribute));
+                efxattr EfxPlacement(MetaAttribute.format);
+                FSeek(getOffset(MetaAnimDur));
+                efxanim EfxAnim;
+                //FSeek(getOffset(MetaBehavior));
+                //efxanim;
+                FSeek(currPos);
+            } Effect  <name = "Effect">;
+        }
+    }
+}
+
+EFLTemplate();
