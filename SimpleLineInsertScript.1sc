@@ -32,11 +32,11 @@ short getOffset(struct seginfo &input)
 void OffsetInc(struct seginfo &input, short inc)
 {
     local short offset = getOffset(input);
-    offset += inc;
+    offset += inc - 0x20;
     
     local ubyte split[2] = splitShort(offset);
     input.section = split[0];
-    input.offset = split[1] - 0x20;
+    input.offset = split[1];
 }
 
 void LineInsert();
