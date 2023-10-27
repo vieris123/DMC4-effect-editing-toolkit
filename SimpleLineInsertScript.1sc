@@ -1,0 +1,63 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Script File
+//
+//      File: EFL
+//   Authors: Vieris
+//   Version: 1
+//   Purpose: Add a line of offsets and re-adjust other offsets accordingly
+//  Category: Effect Editing
+//   History: 
+//------------------------------------------------
+
+//short getOffset(struct seginfo input)
+//{
+LittleEndian();
+
+ubyte[2] splitShort(short input)
+{
+    local ubyte res[2];
+    res[0] = (input >> 8) & 0xFF; 
+    res[1] = input & 0xFF; 
+    return res;
+}
+
+short getOffset(struct seginfo &input)
+{
+    local short shortOffset = input.section;
+    shortOffset <<= 8;
+    shortOffset += input.offset + 0x20;
+    return shortOffset;
+}
+
+void OffsetInc(struct seginfo &input, short inc)
+{
+    local short offset = getOffset(input);
+    offset += inc;
+    
+    local ubyte split[2] = splitShort(offset);
+    input.section = split[0];
+    input.offset = split[1] - 0x20;
+}
+
+void LineInsert();
+{
+    local short i, j;
+    local short insert0 = getOffset(Effect[0].MetaPlacement);
+    for (i = 0; i < Header.EfxCount; i++)
+    {
+        OffsetInc(Effect[i].MetaPlacement, 0x10);
+        OffsetInc(Effect[i].MetaAttribute, 0x10);
+        OffsetInc(Effect[i].MetaAnimDur, 0x10);
+        OffsetInc(Effect[i].MetaBehavior, 0x10);
+    }
+    int bufferLength = Header.FileLength - Header.EfxCount * 16;
+    char buffer[bufferLength];
+    ReadBytes(buffer, insert0, bufferLength); 
+    for (j = 0; j < 2; j++)
+    {;
+        WriteDouble(insert0 + j*8, 0);
+    }
+    WriteBytes(buffer, insert0 + 16, bufferLength);
+    Header.EfxCount += 1;
+    Header.FileLength += 0x10;
+}
