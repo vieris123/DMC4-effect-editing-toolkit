@@ -1,0 +1,306 @@
+/* ----BASIC TYPES---- */
+    typedef float  f32;
+    typedef uint32 u32;
+    typedef int32  s32;
+    typedef uint16 u16;
+    typedef int16  s16;
+    typedef ubyte  u8;
+    typedef char MT_CHAR;
+    typedef u32 XFHANDLE<format=hex>;
+    typedef u32 MtString;
+
+
+/* ----VECTORS AND SHIT---- */
+{
+    // MtFloat2
+    typedef struct {
+        f32 x<bgcolor=cRed>; 
+        f32 y<bgcolor=cGreen>;
+    } MtFloat2<read=Str( "[%.3f, %.3f]", x, y ),
+               write=SScanf( value, "[%f, %f]", x, y )>;
+
+
+    // MtFloat2A
+    typedef struct {
+        f32 x<bgcolor=cRed>; 
+        f32 y<bgcolor=cGreen>;
+    } MtFloat2A<read=Str( "[%.3f, %.3f]", x, y ),
+                write=SScanf( value, "[%f, %f]", x, y )>;
+
+
+    // MtFloat3
+    typedef struct {
+        f32 x<bgcolor=cRed>; 
+        f32 y<bgcolor=cGreen>;
+        f32 z<bgcolor=cBlue>;
+    } MtFloat3<read=Str( "[%.3f, %.3f, %.3f]", x, y, z ), 
+               write=SScanf( value, "[%f, %f, %f]", x, y, z )>;
+
+
+    // MtFloat3A
+    typedef struct {
+        f32 x<bgcolor=cRed>; 
+        f32 y<bgcolor=cGreen>;
+        f32 z<bgcolor=cBlue>;
+    } MtFloat3A<read=Str( "[%.3f, %.3f, %.3f]", x, y, z ), 
+                write=SScanf( value, "[%f, %f, %f]", x, y, z )>;
+
+
+    // MtVector3
+    typedef struct {
+        f32 x<bgcolor=cRed>; 
+        f32 y<bgcolor=cGreen>;
+        f32 z<bgcolor=cBlue>;
+        // f32 w<bgcolor=0x00>;
+    } MtVector3<read=Str( "[%.3f, %.3f, %.3f]", x, y, z ), 
+                write=SScanf( value, "[%f, %f, %f]", x, y, z )>;
+
+    // MtHalf4
+    typedef struct {
+        s16 x<bgcolor=cRed>; 
+        s16 y<bgcolor=cGreen>;
+        s16 z<bgcolor=cBlue>;
+        s16 w<bgcolor=0x00>;
+    } MtHalf4<read=Str( "[%.3f, %.3f, %.3f, %.3f]", x, y, z, w ),
+              write=SScanf( value, "[%f, %f, %f, %f]", x, y, z, w )>;
+
+
+    // MtVector4
+    typedef struct {
+        f32 x<bgcolor=cRed>; 
+        f32 y<bgcolor=cGreen>;
+        f32 z<bgcolor=cBlue>;
+        f32 w<bgcolor=0x00>;
+    } MtVector4<read=Str( "[%.3f, %.3f, %.3f, %.3f]", x, y, z, w ),
+                write=SScanf( value, "[%f, %f, %f, %f]", x, y, z, w )>;
+
+
+    // MtFloat4A
+    typedef struct {
+        f32 x<bgcolor=cRed>; 
+        f32 y<bgcolor=cGreen>;
+        f32 z<bgcolor=cBlue>;
+        f32 w<bgcolor=0x00>;
+    } MtFloat4A<read=Str( "[%.3f, %.3f, %.3f, %.3f]", x, y, z, w ),
+                write=SScanf( value, "[%f, %f, %f, %f]", x, y, z, w )>;
+
+
+    // MtQuaternion
+    typedef struct {
+        f32 x;
+        f32 y;
+        f32 z;
+        f32 w;
+    } MtQuaternion<read=Str( "[%.3f, %.3f, %.3f, %.3f]", x, y, z, w ),
+                   write=SScanf(value, "[%f, %f, %f, %f]", x, y, z, w)>;
+}
+
+
+/* ----MATRICIES---- */
+{
+    // MtFloat3x3
+    struct MtFloat3x3 {
+        f32 m[3]<bgcolor=cRed>; 
+        f32 m[3]<bgcolor=cGreen>;
+        f32 m[3]<bgcolor=cBlue>;
+    };
+
+
+    // MtFloat4x3
+    struct MtFloat4x3 {
+        f32 m[4]<bgcolor=cRed>; 
+        f32 m[4]<bgcolor=cGreen>;
+        f32 m[4]<bgcolor=cBlue>;
+    };
+
+
+    // MtFloat4x4
+    struct MtFloat4x4 {
+        f32 m[4]<bgcolor=cRed>; 
+        f32 m[4]<bgcolor=cGreen>;
+        f32 m[4]<bgcolor=cBlue>;
+        f32 m[4]<bgcolor=0x00>;
+    };
+
+
+    // MtMatrix
+    struct MtMatrix {
+        MtVector4 m[4]<bgcolor=0x00>;
+    };
+}
+
+
+/* ----PRIMITIVES---- */
+{
+    // MtAABB 
+    typedef struct {
+        MtVector3 minpos;
+        float pad;
+        MtVector3 maxpos;
+        float pad;
+    } MtAABB<open=false>;
+
+
+    // MtSphere
+    typedef struct {
+        MtFloat3A pos;
+        f32 r;
+    } MtSphere<read=Str( "[%.3f, %.3f, %.3f] | %.3f", pos.x, pos.y, pos.z, r ),
+               write=SScanf( value, "[%f, %f, %f | %f]", pos.x, pos.y, pos.z, r )>;
+
+
+    // MtRange
+    typedef struct {
+        s32 s;
+        u32 r;
+    } MtRange<read=Str( "s:%d, r:%u ", s, r )>;
+
+
+    // MtRangeU16
+    typedef struct {
+        u32 s : 16;
+        u32 r : 16;
+    } MtRangeU16<read=Str( "s:%d, r:%u ", s, r )>;
+
+    
+    // MtRangeF
+    typedef struct {
+        f32 s;
+        f32 r;
+    } MtRangeF<read=Str( "s:%.3f, r:%.3f", s, r )>;
+
+
+    // MtLine
+    typedef struct {
+        MtVector3 from;
+        MtVector3 dir;
+    } MtLine<name=Str( "from [%.3f, %.3f, %.3f, %.3f] ", from.x, from.y, from.z, from.w ),
+             read=Str( "dir [%.3f, %.3f, %.3f, %.3f] ", dir.x, dir.y, dir.z, dir.w )>;
+
+
+    // MtRay
+    typedef struct {
+        MtVector3 from;
+        MtVector3 dir;
+    } MtRay<name=Str( "from [%.3f, %.3f, %.3f, %.3f] ", from.x, from.y, from.z, from.w ),
+            read=Str( "dir [%.3f, %.3f, %.3f, %.3f] ", dir.x, dir.y, dir.z, dir.w )>;;
+
+    
+    // MtOBB
+    typedef struct {
+        MtMatrix coord;
+        MtVector3 extent;
+    } MtOBB;
+
+    
+    // MtCylinder
+    typedef struct {
+        MtFloat3A p0;
+        f32 r;
+        MtFloat3A p1;
+        f32 pad;
+    } MtCylinder;
+
+    
+    // MtCone
+    typedef struct {
+        MtFloat3A p0;
+        f32 r0;
+        MtFloat3A p1;
+        f32 r1;
+    } MtCone;
+
+    
+    // MtTorus
+    typedef struct {
+        MtFloat3A pos;
+        f32 r;
+        MtFloat3A axis;
+        f32 cr;
+    } MtTorus;
+
+    
+    // MtEllipsoid
+    typedef struct {
+        MtVector3 pos;
+        MtVector3 r;
+    } MtEllipsoid;
+}
+
+
+// offset
+    #ifndef OFFS_DEF
+    #define OFFS_DEF uint32 offs_t
+    #endif
+
+    #ifndef READ_FUNC
+    #define READ_FUNC read=Str("%Xh", this)
+    #endif
+
+    typedef OFFS_DEF<READ_FUNC, write=OffsWrite>;
+
+
+// MtProperty::TYPE
+    enum MtType {
+        TYPE_UNDEFINED = 0x0,
+        TYPE_CLASS = 0x1,
+        TYPE_CLASSREF = 0x2,
+        TYPE_BOOL = 0x3,
+        TYPE_U8 = 0x4,
+        TYPE_U16 = 0x5,
+        TYPE_U32 = 0x6,
+        TYPE_U64 = 0x7,
+        TYPE_S8 = 0x8,
+        TYPE_S16 = 0x9,
+        TYPE_S32 = 0xA,
+        TYPE_S64 = 0xB,
+        TYPE_F32 = 0xC,
+        TYPE_F64 = 0xD,
+        TYPE_STRING = 0xE,
+        TYPE_COLOR = 0xF,
+        TYPE_POINT = 0x10,
+        TYPE_SIZE = 0x11,
+        TYPE_RECT = 0x12,
+        TYPE_MATRIX = 0x13,
+        TYPE_VECTOR3 = 0x14,
+        TYPE_VECTOR4 = 0x15,
+        TYPE_QUATERNION = 0x16,
+        TYPE_PROPERTY = 0x17,
+        TYPE_EVENT = 0x18,
+        TYPE_GROUP = 0x19,
+        TYPE_PAGE_BEGIN = 0x1A,
+        TYPE_PAGE_END = 0x1B,
+        TYPE_EVENT32 = 0x1C,
+        TYPE_ARRAY = 0x1D,
+        TYPE_PROPERTYLIST = 0x1E,
+        TYPE_GROUP_END = 0x1F,
+        TYPE_CSTRING = 0x20,
+        TYPE_TIME = 0x21,
+        TYPE_FLOAT2 = 0x22,
+        TYPE_FLOAT3 = 0x23,
+        TYPE_FLOAT4 = 0x24,
+        TYPE_FLOAT3x3 = 0x25,
+        TYPE_FLOAT4x3 = 0x26,
+        TYPE_FLOAT4x4 = 0x27,
+        TYPE_EASECURVE = 0x28,
+        TYPE_LINE = 0x29,
+        TYPE_LINESEGMENT = 0x2A,
+        TYPE_RAY = 0x2B,
+        TYPE_PLANE = 0x2C,
+        TYPE_SPHERE = 0x2D,
+        TYPE_CAPSULE = 0x2E,
+        TYPE_AABB = 0x2F,
+        TYPE_OBB = 0x30,
+        TYPE_CYLINDER = 0x31,
+        TYPE_TRIANGLE = 0x32,
+        TYPE_CONE = 0x33,
+        TYPE_TORUS = 0x34,
+        TYPE_ELLIPSOID = 0x35,
+        TYPE_RANGE = 0x36,
+        TYPE_RANGEF = 0x37,
+        TYPE_RANGEU16 = 0x38,
+        TYPE_CUSTOM = 0x39,
+        TYPE_END = 0x3A,
+    };
+
+    

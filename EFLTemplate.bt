@@ -5,11 +5,13 @@
 //   Authors: Vieris
 //   Version: 1.1
 //   Purpose: Parses EFL files
-//  Category: 
+//  Category: Effect Editing
 // File Mask: 
-//  ID Bytes: 
+//  ID Bytes: 45 46 4C
 //   History: 
 //------------------------------------------------
+#include "MTF_types.1sc"
+
 LittleEndian();
 typedef struct{
     ubyte format <name="Format">;
@@ -19,14 +21,14 @@ typedef struct{
     } seginfo <name = "Segment Info">;
 
 typedef struct{
-    ubyte   colorBlue <name="Blue", bgcolor=0xFF0000>;
-	ubyte   colorGreen <name="Green", bgcolor=0x00FF00>;
-    ubyte   colorRed <name="Red", bgcolor=0x0000FF>;
-	ubyte   colorAlpha <name="Alpha", bgcolor=0x9BFFFF>;
-    ubyte   colorBlue <name="Blue", bgcolor=0xFF0000>;
-	ubyte   colorGreen <name="Green", bgcolor=0x00FF00>;
-    ubyte   colorRed <name="Red", bgcolor=0x0000FF>;
-	ubyte   colorAlpha <name="Alpha", bgcolor=0x9BFFFF>;
+    ubyte   colorBlue1 <name="Blue 1", bgcolor=0xFF0000>;
+	ubyte   colorGreen1 <name="Green 1", bgcolor=0x00FF00>;
+    ubyte   colorRed1 <name="Red 1", bgcolor=0x0000FF>;
+	ubyte   colorAlpha1 <name="Alpha 2", bgcolor=0x9BFFFF>;
+    ubyte   colorBlue2 <name="Blue 2", bgcolor=0xFF0000>;
+	ubyte   colorGreen2 <name="Green 2", bgcolor=0x00FF00>;
+    ubyte   colorRed2 <name="Red 2", bgcolor=0x0000FF>;
+	ubyte   colorAlpha2 <name="Alpha 2", bgcolor=0x9BFFFF>;
     } colorcode <name="Color Code">;
 
 typedef struct{
@@ -36,11 +38,13 @@ typedef struct{
     short transition2 <name = "Transition #2">;
     short fadeout1 <name = "Fade-out #1">;
     short fadeout2 <name = "Fade-out #2">;
-    char persistent <name = "Keep permanent">;
+    uint32 KeepHoldFlag : 1;
+    uint32 KeyframeKeepFrameParamOffset : 15;
+    uint32 KeepHoldFrame : 16;
     } efxanim <name = "Animation duration">;
 
 typedef struct {
-        char states[4] <name = "Triggering state">;
+        char states[4] <name = "Triggering state", format = hex>;
         char ukn[4];
         short instances <name = "Number of instances">;
         short ukn1;
@@ -100,35 +104,220 @@ void AttrFormatParse(ubyte format)
 {
     switch (format){
         case 0x00:
+            struct {
+            ubyte ukn3 <name = "Seems important (?)">;
+            ubyte orientation <name = "Texture orientation">;
+            ubyte startTex <name = "Starting texture">;
+            ubyte endTex <name = "End texture (for randomization)">;
+            ubyte anim[4] <name = "Animated tex thingies(?)">;
+            float shrinkRate <name = "Shrink rate during fade-out">;
+            float shrinkAdj <name = "Smth to do with shrink (?)">;
+            FSkip(16);
+            char texRef[26];
+            FSkip(166);
+            char eanRef[23];
+            FSkip(40);
+            float rotation;
+            float rotationVar;
+            float rotationAnim;
+            float rotationAnimVar;
+            float size;
+            float sizeVar;
+            float stretchAnim;
+            float stretchAnimVar;
+            } standardEfx <name = "Format-specific Attributes">;
             break;
         case 0x01:
+            struct {
+            ubyte ukn <name = "Seems important (?)">;
+            ubyte orientation <name = "Texture orientation">;
+            ubyte startTex <name = "Starting texture">;
+            ubyte endTex <name = "End texture (for randomization)">;
+            ubyte anim[4] <name = "Animated tex thingies(?)">;
+            float shrinkRate <name = "Shrink rate during fade-out">;
+            float shrinkAdj <name = "Smth to do with shrink (?)">;
+            FSkip(16);
+            char texRef[64];
+            FSkip(128);
+            char eanRef[64];
+            uint32 LineType : 8;
+            uint32 LineOfsNum : 8;
+            uint32 ColorPlaceInType : 4;
+            uint32 ColorPlaceType : 4;
+            uint32 ColorPlaceNo : 8;
+            uint32 SizePlaceInType : 4;
+            uint32 SizePlaceType : 4;
+            uint32 SizePlaceNo : 8;
+            uint32 KeyframeColorParamOffset : 16;
+            colorcode SecColor <name="Secondary Color Code">;
+            MtRangeF HeadSize;
+            MtRangeF HeadSizeAdd;
+            MtRangeF PlaceSize;
+            MtRangeF PlaceSizeAdd;
+            uint32 CullingRotationOrder: 4;
+            uint32 CullingRotationAxisType : 4;
+            uint32 ukn1 : 8;
+            uint32 ukn2 : 16;
+            uint32 KeyframeHeadSizeParamOffset : 16;
+            uint32 KeyframePlaceSizeParamOffset : 16;
+            float CullingAngle;
+            float CullingDist;
+            float CullingRotation[3];
+            float OcclusionRadius;
+            } PolylineEfx <name = "Format-specific Attributes">;
             break;
         case 0x02:
+            struct {
+            ubyte ukn3 <name = "Seems important (?)">;
+            ubyte orientation <name = "Texture orientation">;
+            ubyte startTex <name = "Starting texture">;
+            ubyte endTex <name = "End texture (for randomization)">;
+            ubyte anim[4] <name = "Animated tex thingies(?)">;
+            float shrinkRate <name = "Shrink rate during fade-out">;
+            float shrinkAdj <name = "Smth to do with shrink (?)">;
+            FSkip(16);
+            char texRef[26];
+            FSkip(166);
+            char eanRef[23];
+            FSkip(41);
+            struct{
+                float xRotation;
+                float miniXrotation;
+                float yRotation;
+                float miniYrotation;
+                float zRotation;
+                float miniZrotation;
+                } PositionalRotation <name = "Positional Rotations">;
+            struct{
+                float xRotationSpeed1;
+                float xRotationSpeed2;
+                float yRotationSpeed1;
+                float yRotationSpeed2;
+                float zRotationSpeed1;
+                float zRotationSpeed2;
+                } AnimatedRotation <name = "Animated Rotations">;
+                ubyte defaultOrientation <name = "Default Orientation code", format = hex>;
+                FSkip(15);
+                struct{
+                    float SizeX1;
+                    float SizeX2;
+                    float SizeY1;
+                    float SizeY2;
+                } defaultSizes <name = "Default Size">;
+                struct{
+                    float ExpandX1;
+                    float ExpandX2;
+                    float ExpandY1;
+                    float ExpandY2;
+                } AnimatedExpansion <name = "Animated Expansion Speed">;
+                float skew[4];
+            } dynamicEfx <name = "Format-specific Attributes">;
             break;
         case 0x04:
             break;
         case 0x05:
             struct {
-                char modRef[29];
-            } Efx3D <name = "3D effect">;
+                char ModelPath[64];
+                MtRangeF ModelScale[3];
+                MtRangeF ModelScaleAdd[3];
+                MtRangeF Rotation[3];
+                MtRangeF RotAdd[3];
+                uint32 RotationOrder : 4;
+                uint32 DirAxisType : 4;
+                uint32 ukn : 8;
+                uint32 PartsNoMin : 8;
+                uint32 PartsNoRange : 8;
+            } ModelledEfx <name = "3D effect">;
             break;
         case 0x06:
+            struct {
+                ubyte ukn3 <name = "Seems important (?)">;
+                ubyte orientation <name = "Texture orientation">;
+                ubyte startTex <name = "Starting texture">;
+                ubyte endTex <name = "End texture (for randomization)">;
+                ubyte anim[4] <name = "Animated tex thingies(?)">;
+                float shrinkRate <name = "Shrink rate during fade-out">;
+                float shrinkAdj <name = "Smth to do with shrink (?)">;
+                FSkip(16);
+                char texRef[26];
+                FSkip(166);
+                char eanRef[23];
+                FSkip(41);
+                //ubyte rotation;
+                //ubyte ukn;
+                //ubyte SecColorDispMode <name = "Secondary Color Display mode">;
+                //ubyte CamTrackToggle <name = "Effect always faces camera toggle">;
+                //short PrimColorProportion <name = "Primary Color Proportion">;
+                //short SecColorProportion <name = "Secondary Color Proportion">;
+                //colorcode SecColor <name = "Secondary Color">;
+                //short vert;
+                //short vertlength;
+                uint32 PrimModelAxis : 4;
+                uint32 PrimModelType : 4;
+                uint32 DirAxisType : 4;
+                uint32 RotationOrder : 4;
+                uint32 ColorPlaceInType : 4;
+                uint32 ColorPlaceType : 4;
+                uint32 ukn : 8;
+                uint32 HoriColorPlaceNo: 16;
+                uint32 ukn1 : 16;
+                colorcode SecColor <name = "Secondary Color">;
+                short RotationDivNum;
+                short RotationTexDivNum;
+                short RotationDrawStart;
+                short RotationDrawEnd;
+                short HoriDivNum;
+                short HoriTexDivNum;
+                short HoriDrawStart;
+                short HoriDrawEnd;
+                MtRangeF ModelScale[3];
+                MtRangeF ModelScaleAdd[3];
+                MtRangeF Rotation[3];
+                MtRangeF RotationAdd[3];
+                MtRangeF Radius[2];
+                MtRangeF RadiusAdd[2];
+                MtRangeF Height[2];
+                MtRangeF HeightAdd[2];
+                float DistortRate[4];
+                } PrimitiveEfx <name = "Primitive Effect Attributes">;
             break;
         case 0x07:
             break;
+        case 0x09:
+            struct{
+                } Filter;
+            break;
+        case 0x0A:
+            break;
+        case 0x0F:
+            struct {
+                ubyte ukn3 <name = "Seems important (?)">;
+                ubyte orientation <name = "Texture orientation">;
+                ubyte startTex <name = "Starting texture">;
+                ubyte endTex <name = "End texture (for randomization)">;
+                ubyte anim[4] <name = "Animated tex thingies(?)">;
+                float shrinkRate <name = "Shrink rate during fade-out">;
+                float shrinkAdj <name = "Smth to do with shrink (?)">;
+                FSkip(16);
+                char texRef[26];
+                FSkip(166);
+                char eanRef[23];
+                FSkip(40);
+                } placeholder;
         default:
             break;
     }
 }
 
 typedef struct (ubyte format){
-    char toggle <name = "Toggle effect">;
-    char ukn[2] <hidden = true>;
-    ubyte displaymode <name = "Display mode", format = hex>;
-    ubyte reflectiveness <name = "Reflectiveness (?)", format = hex>;
-    ubyte ukn1[3] <name = "Seems important">;
-    FSkip(4);
-    ubyte fgbg[4] <name = "FG/BG placement (?)">;
+    char TransMode <name = "Transparency Mode">;
+    char EntryType;
+    char CullingFlag;
+    char VolumeBlendRate;
+    ubyte ParticleOptions[4];
+    short LightGroupFlag;
+    short DepthofField <name = "Depth of Field (?)">;
+    ubyte fgbg[4] <name = "FG/BG level (?)">;
     FSkip(2);
     ubyte thickness <name = "Effect thickness (?)", format = hex>;
     ubyte colormode <name = "Color mode (RGB/CYMK)", format = hex>;
@@ -140,19 +329,19 @@ typedef struct (ubyte format){
     float expandRate <name = "Spread/Expand rate">;
     float triggerInc <name = "Size increment (?)">;
     FSkip(24);
-    colorcode ColorCodePrimary;
-    ubyte ukn3 <name = "Seems important (?)">;
-    ubyte orientation <name = "Texture orientation">;
-    ubyte startTex <name = "Starting texture">;
-    ubyte endTex <name = "End texture (for randomization)">;
-    ubyte anim[4] <name = "Animated tex thingies(?)">;
-    float shrinkRate <name = "Shrink rate during fade-out">;
-    float shrinkAdj <name = "Smth to do with shrink (?)">;
-    FSkip(16);
-    char texRef[26];
-    FSkip(166);
-    char eanRef[23];
-    //AttrFormatParse(format);
+    colorcode ColorCodePrimary <name = "Primary Color Code">;
+    //ubyte ukn3 <name = "Seems important (?)">;
+    //ubyte orientation <name = "Texture orientation">;
+    //ubyte startTex <name = "Starting texture">;
+    //ubyte endTex <name = "End texture (for randomization)">;
+    //ubyte anim[4] <name = "Animated tex thingies(?)">;
+    //float shrinkRate <name = "Shrink rate during fade-out">;
+    //float shrinkAdj <name = "Smth to do with shrink (?)">;
+    //FSkip(16);
+    //char texRef[26];
+    //FSkip(166);
+    //char eanRef[23];
+    AttrFormatParse(format);
     } efxattr <name = "Effect Attributes">;
     
 typedef struct (ubyte format)
